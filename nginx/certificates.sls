@@ -1,21 +1,21 @@
 {%- set tplroot = tpldir.split('/')[0] %}
-{%- from tplroot ~ '/map.jinja' import nginx with context %}
+{%- from tplroot ~ '/map.jinja' import nginx, pillar_namespace with context %}
 
 include:
   - {{ tplroot }}.service
 
-{% set certificates_path = salt['pillar.get']('nginx:certificates_path', '/etc/nginx/ssl') %}
+{% set certificates_path = salt['pillar.get']('{}:certificates_path'.format(pillar_namespace), '/etc/nginx/ssl') %}
 prepare_certificates_path_dir:
   file.directory:
     - name: {{ certificates_path }}
     - makedirs: True
 
-{%- for dh_param, value in salt['pillar.get']('nginx:dh_param', {}).items() %}
+{%- for dh_param, value in salt['pillar.get']('{}:dh_param'.format(pillar_namespace), {}).items() %}
 {%- if value is string %}
 create_nginx_dhparam_{{ dh_param }}_key:
   file.managed:
     - name: {{ certificates_path }}/{{ dh_param }}
-    - contents_pillar: nginx:dh_param:{{ dh_param }}
+    - contents_pillar: {{ pillar_namespace }}:dh_param:{{ dh_param }}
     - makedirs: True
     - require:
       - file: prepare_certificates_path_dir
@@ -36,30 +36,30 @@ generate_nginx_dhparam_{{ dh_param }}_key:
 {%- endif %}
 {%- endfor %}
 
-{%- for domain in salt['pillar.get']('nginx:certificates', {}).keys() %}
+{%- for domain in salt['pillar.get']('{}:certificates'.format(pillar_namespace), {}).keys() %}
 
 nginx_{{ domain }}_ssl_certificate:
   file.managed:
     - name: {{ certificates_path }}/{{ domain }}.crt
     - makedirs: True
-{% if salt['pillar.get']("nginx:certificates:{}:public_cert_pillar".format(domain)) %}
-    - contents_pillar: {{ salt['pillar.get']('nginx:certificates:{}:public_cert_pillar'.format(domain)) }}
+{% if salt['pillar.get']("{}:certificates:{}:public_cert_pillar".format(pillar_namespace, domain)) %}
+    - contents_pillar: {{ salt['pillar.get']('{}:certificates:{}:public_cert_pillar'.format(pillar_namespace, domain)) }}
 {% else %}
-    - contents_pillar: nginx:certificates:{{ domain }}:public_cert
+    - contents_pillar: {{ pillar_namespace }}:certificates:{{ domain }}:public_cert
 {% endif %}
     - watch_in:
       - service: nginx_service
 
-{% if salt['pillar.get']("nginx:certificates:{}:private_key".format(domain)) or salt['pillar.get']("nginx:certificates:{}:private_key_pillar".format(domain)) %}
+{% if salt['pillar.get']("{}:certificates:{}:private_key".format(pillar_namespace, domain)) or salt['pillar.get']("{}:certificates:{}:private_key_pillar".format(pillar_namespace, domain)) %}
 nginx_{{ domain }}_ssl_key:
   file.managed:
     - name: {{ certificates_path }}/{{ domain }}.key
     - mode: 600
     - makedirs: True
-{% if salt['pillar.get']("nginx:certificates:{}:private_key_pillar".format(domain)) %}
-    - contents_pillar: {{ salt['pillar.get']('nginx:certificates:{}:private_key_pillar'.format(domain)) }}
+{% if salt['pillar.get']("{}:certificates:{}:private_key_pillar".format(pillar_namespace, domain)) %}
+    - contents_pillar: {{ salt['pillar.get']('{}:certificates:{}:private_key_pillar'.format(pillar_namespace, domain)) }}
 {% else %}
-    - contents_pillar: nginx:certificates:{{ domain }}:private_key
+    - contents_pillar: {{ pillar_namespace }}:certificates:{{ domain }}:private_key
 {% endif %}
     - watch_in:
       - service: nginx_service
