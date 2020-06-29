@@ -2,7 +2,7 @@
 {%- from tplroot ~ '/map.jinja' import nginx with context %}
 
 include:
-  - nginx.service
+  - {{ tplroot }}.service
 
 {% set certificates_path = salt['pillar.get']('nginx:certificates_path', '/etc/nginx/ssl') %}
 prepare_certificates_path_dir:

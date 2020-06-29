@@ -9,14 +9,14 @@
 
 {% if salt['grains.get']('os_family') in ['Debian', 'RedHat'] %}
 include:
-  - nginx.pkg
-  - nginx.config
-  - nginx.service
+  - {{ tplroot }}.pkg
+  - {{ tplroot }}.config
+  - {{ tplroot }}.service
   {%- if nginx.snippets is defined %}
-  - nginx.snippets
+  - {{ tplroot }}.snippets
   {%- endif %}
-  - nginx.servers
-  - nginx.certificates
+  - {{ tplroot }}.servers
+  - {{ tplroot }}.certificates
 
 passenger_install:
   pkg.installed:

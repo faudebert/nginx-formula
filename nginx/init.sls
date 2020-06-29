@@ -7,15 +7,15 @@
 
 include:
   {%- if nginx.ng is defined %}
-  - nginx.deprecated
+  - {{ tplroot }}.deprecated
   {%- endif %}
-  - nginx.config
-  - nginx.service
+  - {{ tplroot }}.config
+  - {{ tplroot }}.service
   {%- if nginx.snippets is defined %}
-  - nginx.snippets
+  - {{ tplroot }}.snippets
   {%- endif %}
-  - nginx.servers
-  - nginx.certificates
+  - {{ tplroot }}.servers
+  - {{ tplroot }}.certificates
 
 extend:
   nginx_service:

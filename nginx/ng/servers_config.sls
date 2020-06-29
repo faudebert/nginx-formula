@@ -1,2 +1,4 @@
+{%- set tplroot = tpldir.split('/')[0] %}
+
 include:
-  - nginx.deprecated
+  - {{ tplroot }}.deprecated
